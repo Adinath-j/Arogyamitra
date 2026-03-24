@@ -1,32 +1,49 @@
 import { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
+import toast from 'react-hot-toast'
 import WorkoutCard from '../components/WorkoutCard'
 import MealCard from '../components/MealCard'
-import { getLatestPlans, getUser, generateWorkout, generateMeal } from '../api/api'
+import { getLatestPlans, generateWorkout, generateMeal } from '../api/api'
+import { authApi } from '../services/api'
+import { useAuthStore } from '../stores/authStore'
 
 export default function Dashboard() {
   const [plans, setPlans]     = useState({ workout: null, meal: null })
-  const [user, setUser]       = useState(null)
   const [loading, setLoading] = useState(true)
   const [regen, setRegen]     = useState('')
   const [tab, setTab]         = useState('workout')
   const navigate = useNavigate()
+  const location = useLocation()
+  
+  const { user, setUser } = useAuthStore()
+  const userId = user?.id
 
-  const userId = localStorage.getItem('arogyamitra_user_id')
+  // Intercept Google OAuth success state
+  useEffect(() => {
+    const params = new URLSearchParams(location.search)
+    if (params.get('calendar') === 'connected') {
+      toast.success("Google Calendar connected successfully! 📅")
+      window.history.replaceState({}, document.title, window.location.pathname)
+    }
+  }, [location.search])
 
   useEffect(() => {
-    if (!userId) { navigate('/'); return }
-    loadData()
+    if (userId) {
+      loadData()
+    } else {
+      setLoading(false)
+    }
   }, [userId])
 
   const loadData = async () => {
+    if (!userId) return
     setLoading(true)
     try {
-      const [userData, plansData] = await Promise.all([
-        getUser(userId),
+      const [plansData, profileData] = await Promise.all([
         getLatestPlans(userId),
+        authApi.me()
       ])
-      setUser(userData)
+      setUser({ ...user, ...profileData, name: profileData.full_name })
       setPlans(plansData)
     } catch (err) {
       console.error(err)
@@ -80,7 +97,7 @@ export default function Dashboard() {
             💬 Chat with AROMI
           </button>
           <button
-            onClick={() => navigate('/')}
+            onClick={() => navigate('/profile')}
             className="px-4 py-2 rounded-xl bg-white/5 border border-white/10 text-white/50 text-sm hover:text-white/80 hover:bg-white/8 transition-all"
           >
             ✏️ Edit Profile

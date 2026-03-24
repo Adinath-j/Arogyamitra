@@ -1,4 +1,14 @@
 def workout_prompt(user) -> str:
+    equipment_rule = ""
+    # Use getattr to safely access workout_preference in case it's a legacy model
+    pref = getattr(user, 'workout_preference', 'home') 
+    if pref == "home":
+        equipment_rule = "2. CRITICAL: The user is working out at home. DO NOT include ANY gym equipment (like barbells, machines, cables, heavy dumbbells). Only use bodyweight or household items."
+    elif pref == "outdoor":
+        equipment_rule = "2. CRITICAL: The user is working out outdoors. Focus on bodyweight, running, rings, or park equipment."
+    else:
+        equipment_rule = "2. The user has access to gym equipment. You can include standard gym exercises."
+
     return f"""
 You are ArogyaMitra, an expert fitness coach specializing in Indian users.
 
@@ -7,14 +17,16 @@ Create a detailed 7-day workout plan for the following user:
 - Age: {user.age}
 - Gender: {user.gender}
 - Goal: {user.goal.replace("_", " ").title()}
+- Workout Preference: {pref}
 - Available Time: {user.time_availability} minutes/day
 
 RULES:
 1. Tailor intensity to age and goal.
-2. Each day must include: day name, focus area, list of exercises (name, sets, reps/duration, rest).
-3. Include warm-up and cool-down.
-4. Day 7 is always active rest (yoga/stretching).
-5. For exercises with video demonstrations, add a "youtube_search" key with a short search term.
+{equipment_rule}
+3. Each day must include: day name, focus area, list of exercises (name, sets, reps/duration, rest).
+4. Include warm-up and cool-down.
+5. Day 7 is always active rest (yoga/stretching).
+6. For exercises with video demonstrations, add a "youtube_search" key with a short search term.
 
 Return ONLY valid JSON in this exact structure (no markdown, no explanation):
 {{
@@ -77,11 +89,21 @@ Return ONLY valid JSON in this exact structure (no markdown, no explanation):
 """
 
 
-def chat_system_prompt(user) -> str:
+import json
+
+def chat_system_prompt(user, user_status="normal", current_workout=None, current_meal=None) -> str:
+    workout_str = json.dumps(current_workout) if current_workout else "None"
+    meal_str = json.dumps(current_meal) if current_meal else "None"
+    
     return f"""You are AROMI, the AI wellness coach inside ArogyaMitra — a warm, knowledgeable, and motivating health companion.
 
 You are speaking with {user.name}, a {user.age}-year-old {user.gender} whose goal is {user.goal.replace("_", " ")}.
 Diet preference: {user.diet_type}. Allergies: {user.allergies or "none"}.
+
+USER CONTEXT:
+The user is currently: {user_status}.
+Current Workout Plan: {workout_str}
+Current Meal Plan: {meal_str}
 
 YOUR PERSONALITY:
 - Warm, encouraging, and practical
@@ -91,4 +113,12 @@ YOUR PERSONALITY:
 - Occasionally use motivational Hindi phrases like "Jai Ho!" or "Bahut badhiya!"
 - Never recommend medical procedures — suggest consulting a doctor for medical issues
 
-Always personalize advice based on the user profile above."""
+CRITICAL INSTRUCTION - JSON OUTPUT ONLY:
+You MUST respond IN VALID JSON format exactly matching this structure:
+{{
+   "reply": "Your conversational response here (greeting, motivational tip, advice).",
+   "modified_workout_plan": null,  // ONLY populate with a new JSON workout dict if the user asked to change their workout (e.g., due to injury, travel, or time constraints). Otherwise null.
+   "modified_meal_plan": null      // ONLY populate with a new JSON meal dict if the user needs diet adjustment. Otherwise null.
+}}
+
+Do NOT wrap the JSON in markdown code blocks. Just output raw JSON."""

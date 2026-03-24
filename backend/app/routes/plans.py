@@ -41,7 +41,15 @@ def get_latest_plans(user_id: int, db: Session = Depends(get_db)):
         .first()
     )
 
+    workout_data = None
+    if workout:
+        workout_data = {"plan_id": workout.id, **json.loads(workout.content)}
+
+    meal_data = None
+    if meal:
+        meal_data = {"plan_id": meal.id, **json.loads(meal.content)}
+
     return {
-        "workout": json.loads(workout.content) if workout else None,
-        "meal": json.loads(meal.content) if meal else None,
+        "workout": workout_data,
+        "meal": meal_data,
     }

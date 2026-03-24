@@ -1,22 +1,13 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import ChatUI from '../components/ChatUI'
-import { getUser } from '../api/api'
+import { useAuthStore } from '../stores/authStore'
 
 export default function Chat() {
-  const [user, setUser]   = useState(null)
-  const [loading, setLoading] = useState(true)
   const navigate = useNavigate()
+  const { user } = useAuthStore()
+  const userId = user?.id
 
-  const userId = localStorage.getItem('arogyamitra_user_id')
-
-  useEffect(() => {
-    if (!userId) { setLoading(false); return }
-    getUser(userId)
-      .then(setUser)
-      .catch(console.error)
-      .finally(() => setLoading(false))
-  }, [userId])
 
   return (
     <div className="page-enter max-w-4xl mx-auto px-4 py-6" style={{ height: 'calc(100vh - 64px)' }}>
@@ -43,11 +34,11 @@ export default function Chat() {
         </div>
 
         {/* No profile warning */}
-        {!loading && !userId && (
+        {!userId && (
           <div className="mx-6 mt-4 px-4 py-3 rounded-xl bg-saffron-500/10 border border-saffron-500/20 text-sm text-saffron-300 flex items-center justify-between flex-shrink-0">
             <span>⚠️ Create your profile for personalized coaching.</span>
             <button
-              onClick={() => navigate('/')}
+              onClick={() => navigate('/profile')}
               className="text-xs px-3 py-1 rounded-lg bg-saffron-500/20 hover:bg-saffron-500/30 transition-all"
             >
               Set up profile →

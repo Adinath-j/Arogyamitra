@@ -21,12 +21,14 @@ def call_groq(messages: list[dict], temperature: float = 0.7, max_tokens: int = 
     return response.choices[0].message.content
 
 
-def call_groq_json(system_prompt: str, user_prompt: str) -> dict:
+def call_groq_json(system_prompt: str = None, user_prompt: str = None, messages: list[dict] = None) -> dict:
     """Call Groq and parse JSON response. Used for structured plan generation."""
-    messages = [
-        {"role": "system", "content": system_prompt},
-        {"role": "user", "content": user_prompt},
-    ]
+    if not messages:
+        messages = [
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": user_prompt},
+        ]
+    
     raw = call_groq(messages, temperature=0.5, max_tokens=4096)
 
     # Strip markdown code fences if present
@@ -34,5 +36,11 @@ def call_groq_json(system_prompt: str, user_prompt: str) -> dict:
     if cleaned.startswith("```"):
         lines = cleaned.split("\n")
         cleaned = "\n".join(lines[1:-1]) if lines[-1] == "```" else "\n".join(lines[1:])
+    
+    if cleaned.startswith("json"):
+        cleaned = cleaned[4:].strip()
 
-    return json.loads(cleaned)
+    try:
+        return json.loads(cleaned)
+    except json.JSONDecodeError:
+        return {"error": "Failed to parse AI response into JSON.", "raw_response": cleaned}

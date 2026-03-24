@@ -1,7 +1,7 @@
 {
-  "name": "frontend",
+  "name": "arogyamitra-frontend",
   "private": true,
-  "version": "1.0.0",
+  "version": "2.0.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -9,14 +9,21 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@tanstack/react-query": "^5.95.2",
+    "axios": "^1.7.9",
+    "date-fns": "^4.1.0",
+    "framer-motion": "^11.18.2",
+    "lucide-react": "^0.469.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
+    "react-hot-toast": "^2.6.0",
     "react-router-dom": "^7.1.1",
-    "axios": "^1.7.9"
+    "recharts": "^2.13.3",
+    "zustand": "^5.0.2"
   },
   "devDependencies": {
-    "@vitejs/plugin-react": "^4.3.4",
     "@tailwindcss/vite": "^4.0.6",
+    "@vitejs/plugin-react": "^4.3.4",
     "tailwindcss": "^4.0.6",
     "vite": "^6.1.0"
   }

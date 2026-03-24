@@ -22,7 +22,8 @@ export const generateWorkout = (userId) =>
   client.post('/generate-workout/', { user_id: userId }).then((r) => r.data)
 
 export const generateMeal = (userId) =>
-  client.post('/generate-meal/', { user_id: userId }).then((r) => r.data)
+  client.post(`/nutrition/generate-by-id?user_id=${userId}`).then((r) => r.data)
+
 
 export const getLatestPlans = (userId) =>
   client.get(`/plans/${userId}/latest`).then((r) => r.data)
@@ -32,5 +33,11 @@ export const getAllPlans = (userId) =>
 
 // ─── Chat ──────────────────────────────────────────────────────────────────
 
-export const sendChatMessage = (userId, messages) =>
-  client.post('/chat/', { user_id: userId, messages }).then((r) => r.data)
+export const sendChatMessage = (userId, message, status, workoutPlan, mealPlan) =>
+  client.post('/aromi-chat/', {
+    user_id: userId,
+    message,
+    user_status: status || 'normal',
+    current_workout_plan: workoutPlan || null,
+    current_meal_plan: mealPlan || null,
+  }).then((r) => r.data)

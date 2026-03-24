@@ -1,4 +1,6 @@
 import { useState } from 'react'
+import { calendarApi } from '../services/api'
+import toast from 'react-hot-toast'
 
 const DAY_COLORS = [
   'from-forest-500/20 to-forest-600/10 border-forest-500/30',
@@ -11,9 +13,9 @@ const DAY_COLORS = [
 ]
 
 function ExerciseRow({ exercise }) {
-  const ytUrl = exercise.youtube_search
+  const ytUrl = exercise.youtube_video_link || (exercise.youtube_search
     ? `https://www.youtube.com/results?search_query=${encodeURIComponent(exercise.youtube_search)}`
-    : null
+    : null)
 
   return (
     <div className="flex items-center justify-between py-2.5 border-b border-white/5 last:border-0 group">
@@ -44,14 +46,52 @@ function ExerciseRow({ exercise }) {
 
 export default function WorkoutCard({ plan }) {
   const [activeDay, setActiveDay] = useState(0)
+  const [syncing, setSyncing] = useState(false)
 
   if (!plan || !plan.plan) return null
 
   const days = plan.plan
   const today = days[activeDay]
 
+  const handleSync = async () => {
+    setSyncing(true)
+    try {
+      const startDate = new Date().toISOString()
+      const res = await calendarApi.sync(plan.plan_id, startDate)
+      toast.success(`Synced ${res.events_created} workouts to Calendar! 📅`)
+    } catch (err) {
+      if (err.response?.status === 400) {
+        // Need to connect Google Calendar
+        try {
+          const { auth_url } = await calendarApi.getAuthUrl()
+          if (auth_url) window.location.href = auth_url
+        } catch (authErr) {
+          toast.error("Failed to connect to Google.")
+        }
+      } else {
+        const detail = err.response?.data?.detail
+        let msg = "Failed to sync to Calendar."
+        if (typeof detail === 'string') msg = detail
+        else if (Array.isArray(detail)) msg = detail[0].msg
+        toast.error(msg)
+      }
+    } finally {
+      setSyncing(false)
+    }
+  }
+
   return (
     <div className="space-y-4">
+      {/* Sync Button */}
+      <div className="flex justify-end">
+        <button
+          onClick={handleSync}
+          disabled={syncing}
+          className="px-4 py-2 rounded-xl border border-blue-500/30 bg-blue-500/10 text-blue-300 text-xs font-medium hover:bg-blue-500/20 transition-all flex items-center gap-2 shadow-lg"
+        >
+          {syncing ? <><div className="spinner !w-3 !h-3" /> Syncing...</> : '📅 Sync to Google Calendar'}
+        </button>
+      </div>
 
       {/* Day tabs */}
       <div className="flex gap-2 flex-wrap">
