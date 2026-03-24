@@ -9,6 +9,10 @@ if not hasattr(bcrypt, "__about__"):
         __version__ = "4.0.1"
     bcrypt.__about__ = _About()
 
+# Bypass Passlib's internal "detect_wrap_bug" which intentionally crashes bcrypt 4.x
+import passlib.handlers.bcrypt
+passlib.handlers.bcrypt.detect_wrap_bug = lambda *args, **kwargs: False
+
 from passlib.context import CryptContext
 
 from fastapi import Depends, HTTPException, status
