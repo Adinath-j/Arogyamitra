@@ -5,7 +5,7 @@ ArogyaMitra is a comprehensive, AI-powered Health and Wellness ecosystem built f
 It features an intelligent assistant (AROMI) powered by LLama3 that natively analyzes health profiles to dynamically generate and modify fitness and meal plans. 
 
 ## 🚀 Live Demo
-- **Frontend**: [Your Vercel Link]
+- **Frontend**: arogyamitra-chi.vercel.app
 - **Backend**: [Your Render Link]
 
 ---
