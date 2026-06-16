@@ -1,19 +1,20 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import ProfileForm from '../components/ProfileForm'
 import { createUser, generateWorkout, generateMeal } from '../api/api'
 
-const FEATURES = [
-  { icon: '🏋️', title: '7-Day Workout Plan',   desc: 'Personalized to your goal & schedule' },
-  { icon: '🍱', title: 'Indian Meal Planning',  desc: 'Calorie-tracked desi recipes' },
-  { icon: '🤖', title: 'AROMI AI Coach',        desc: 'Chat with your wellness expert 24/7' },
-  { icon: '📈', title: 'Progress Tracking',     desc: 'Monitor your fitness journey' },
-]
+// Landing components
+import HeroSection from '../components/landing/HeroSection'
+import AromiShowcase from '../components/landing/AromiShowcase'
+import FeaturesSection from '../components/landing/FeaturesSection'
+import JourneySection from '../components/landing/JourneySection'
+import StatsSection from '../components/landing/StatsSection'
+import OnboardingModal from '../components/landing/OnboardingModal'
 
 export default function Home() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [step, setStep] = useState('')
+  const [isModalOpen, setIsModalOpen] = useState(false)
   const navigate = useNavigate()
 
   const handleSubmit = async (formData) => {
@@ -26,7 +27,7 @@ export default function Home() {
       localStorage.setItem('arogyamitra_user_id', user.id)
       localStorage.setItem('arogyamitra_user_name', user.name)
 
-      // 2. Generate plans in parallel
+      // 2. Generate plans sequentially to show progress
       setStep('Generating your 7-day workout plan with AI…')
       await generateWorkout(user.id)
 
@@ -34,6 +35,7 @@ export default function Home() {
       await generateMeal(user.id)
 
       // 3. Navigate to dashboard
+      setIsModalOpen(false)
       navigate('/dashboard')
     } catch (err) {
       const msg = err.response?.data?.detail || err.message || 'Something went wrong.'
@@ -45,65 +47,38 @@ export default function Home() {
   }
 
   return (
-    <div className="page-enter">
-      {/* Hero */}
-      <div className="relative overflow-hidden">
-        {/* Background glow */}
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[300px] bg-forest-500/10 rounded-full blur-[100px] pointer-events-none" />
-        <div className="absolute top-20 right-1/4 w-[200px] h-[200px] bg-saffron-500/8 rounded-full blur-[80px] pointer-events-none" />
+    <div className="page-enter min-h-screen relative overflow-hidden bg-[#0A0A0A]">
+      {/* Dark background radial gradient base */}
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_var(--tw-gradient-stops))] from-forest-900/10 via-transparent to-transparent pointer-events-none" />
 
-        <div className="max-w-6xl mx-auto px-6 pt-32 pb-24 text-center">
-          <div className="inline-flex items-center gap-2 px-5 py-2 rounded-full glass border border-forest-500/20 text-sm text-forest-400 mb-12 uppercase tracking-widest font-semibold">
-            <span className="pulse-dot w-1.5 h-1.5 rounded-full bg-forest-400" />
-            Powered by LLaMA 3.3-70B via Groq
-          </div>
+      {/* Landing Sections */}
+      <HeroSection onGetStarted={() => setIsModalOpen(true)} />
+      <AromiShowcase />
+      <FeaturesSection />
+      <JourneySection />
+      <StatsSection />
 
-          <h1 className="text-5xl md:text-7xl font-bold text-white mb-6 tracking-tight leading-tight">
-            Your AI-Powered<br />
-            <span className="gradient-text">Wellness Companion</span>
-          </h1>
+      {/* Final CTA Section */}
+      <section className="py-32 relative z-10 text-center px-6">
+        <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">Ready to transform your wellness journey?</h2>
+        <p className="text-lg text-white/60 mb-10 max-w-2xl mx-auto">Join ArogyaMitra today and get a hyper-personalized health plan generated instantly.</p>
+        <button 
+          onClick={() => setIsModalOpen(true)}
+          className="px-10 py-5 rounded-full bg-gradient-to-r from-forest-500 to-forest-400 text-white text-lg font-bold hover:scale-105 hover:shadow-[0_0_30px_rgba(34,197,94,0.4)] transition-all"
+        >
+          Create My Personalized Plan
+        </button>
+      </section>
 
-          <p className="text-lg md:text-xl text-white/60 max-w-2xl mx-auto mb-16 leading-relaxed">
-            ArogyaMitra crafts hyper-personalized workout plans, Indian meal plans, and connects you with AROMI — your 24/7 AI coach.
-          </p>
-
-          {/* Feature pills */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 max-w-3xl mx-auto mb-16">
-            {FEATURES.map(({ icon, title, desc }) => (
-              <div key={title} className="glass rounded-2xl p-4 text-left border border-white/5 hover:border-white/10 transition-all">
-                <div className="text-3xl mb-4">{icon}</div>
-                <div className="text-base font-semibold text-white/90 mb-2">{title}</div>
-                <div className="text-sm text-white/50 leading-relaxed">{desc}</div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {/* Form Section */}
-      <div className="max-w-3xl mx-auto px-6 pb-32">
-        <div className="glass rounded-[2rem] border border-white/10 p-10 md:p-12 glow-green relative z-10">
-          <div className="mb-8">
-            <h2 className="text-xl font-semibold text-white mb-1">Build Your Profile</h2>
-            <p className="text-sm text-white/35">Tell us about yourself and we'll generate your personalized plan in seconds.</p>
-          </div>
-
-          {error && (
-            <div className="mb-6 px-4 py-3 rounded-xl bg-red-500/10 border border-red-500/20 text-sm text-red-400">
-              ❌ {error}
-            </div>
-          )}
-
-          {step && (
-            <div className="mb-6 px-4 py-3 rounded-xl bg-forest-500/10 border border-forest-500/20 text-sm text-forest-300 flex items-center gap-3">
-              <div className="spinner flex-shrink-0" />
-              {step}
-            </div>
-          )}
-
-          <ProfileForm onSubmit={handleSubmit} loading={loading} />
-        </div>
-      </div>
+      {/* Modal */}
+      <OnboardingModal 
+        isOpen={isModalOpen}
+        onClose={() => !loading && setIsModalOpen(false)}
+        onSubmit={handleSubmit}
+        loading={loading}
+        error={error}
+        step={step}
+      />
     </div>
   )
 }
