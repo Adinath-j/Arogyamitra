@@ -136,7 +136,5 @@ Start the React development server:
 ```bash
 npm run dev
 ```
-*Your frontend is now live at http://localhost:5173* 🚀
-
 ---
 *ArogyaMitra was carefully crafted using cutting-edge LLMs, Python ASGI patterns, and modern Javascript frontend architecture!*
