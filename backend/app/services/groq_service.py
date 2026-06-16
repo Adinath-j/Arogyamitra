@@ -1,11 +1,8 @@
-import os
 import json
 from groq import Groq
-from dotenv import load_dotenv
+from app.utils.config import settings
 
-load_dotenv()
-
-client = Groq(api_key=os.environ.get("GROQ_API_KEY"))
+client = Groq(api_key=settings.GROQ_API_KEY)
 
 MODEL = "llama-3.3-70b-versatile"
 
@@ -31,16 +28,21 @@ def call_groq_json(system_prompt: str = None, user_prompt: str = None, messages:
     
     raw = call_groq(messages, temperature=0.5, max_tokens=4096)
 
-    # Strip markdown code fences if present
+    # Robust JSON extraction: Find the first { and last }
     cleaned = raw.strip()
-    if cleaned.startswith("```"):
-        lines = cleaned.split("\n")
-        cleaned = "\n".join(lines[1:-1]) if lines[-1] == "```" else "\n".join(lines[1:])
+    start_idx = cleaned.find('{')
+    end_idx = cleaned.rfind('}')
     
-    if cleaned.startswith("json"):
-        cleaned = cleaned[4:].strip()
+    if start_idx != -1 and end_idx != -1 and end_idx > start_idx:
+        cleaned = cleaned[start_idx:end_idx+1]
 
     try:
-        return json.loads(cleaned)
-    except json.JSONDecodeError:
+        parsed = json.loads(cleaned)
+        print(f"✅ AI Response successfully parsed as JSON.")
+        return parsed
+    except json.JSONDecodeError as e:
+        print(f"❌ AI JSON Parse Error: {e}")
+        print(f"--- RAW AI RESPONSE ---")
+        print(raw)
+        print(f"-----------------------")
         return {"error": "Failed to parse AI response into JSON.", "raw_response": cleaned}

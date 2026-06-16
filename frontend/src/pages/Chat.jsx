@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import ChatUI from '../components/ChatUI'
+import AromiAvatar from '../components/AromiAvatar'
 import { useAuthStore } from '../stores/authStore'
 
 export default function Chat() {
@@ -10,18 +11,16 @@ export default function Chat() {
 
 
   return (
-    <div className="page-enter max-w-4xl mx-auto px-4 py-6" style={{ height: 'calc(100vh - 64px)' }}>
-      <div className="h-full flex flex-col glass rounded-3xl border border-white/8 overflow-hidden">
+    <div className="page-enter max-w-5xl mx-auto px-6 py-8" style={{ height: 'calc(100vh - 64px)' }}>
+      <div className="h-full flex flex-col glass rounded-[2rem] border border-white/10 overflow-hidden shadow-2xl shadow-forest-500/5">
 
         {/* Chat header */}
-        <div className="flex items-center gap-4 px-6 py-4 border-b border-white/5 flex-shrink-0">
-          <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-saffron-500/40 to-forest-500/40 border border-white/10 flex items-center justify-center text-xl">
-            🌿
-          </div>
+        <div className="flex items-center gap-5 px-8 py-5 border-b border-white/5 flex-shrink-0 bg-white/5">
+          <AromiAvatar size={48} />
           <div className="flex-1">
-            <div className="flex items-center gap-2">
-              <h2 className="font-semibold text-white">AROMI</h2>
-              <span className="px-2 py-0.5 rounded-full text-xs bg-forest-500/15 border border-forest-500/25 text-forest-400">AI Coach</span>
+            <div className="flex items-center gap-3">
+              <h2 className="font-bold text-lg text-white font-heading tracking-wide">AROMI</h2>
+              <span className="px-2.5 py-1 rounded-full text-[10px] uppercase font-bold tracking-widest bg-forest-500/15 border border-forest-500/25 text-forest-400">AI Coach</span>
             </div>
             <p className="text-xs text-white/35 mt-0.5">
               {user ? `Personalized for ${user.name} · ${user.goal?.replace('_',' ')}` : 'Your AI wellness companion'}

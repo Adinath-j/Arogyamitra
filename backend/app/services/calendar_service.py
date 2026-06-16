@@ -6,6 +6,9 @@ def get_google_auth_url(user_id: int) -> str:
     """Returns the Google OAuth2 authorization URL."""
     try:
         from google_auth_oauthlib.flow import Flow
+        print("CLIENT ID:", settings.GOOGLE_CALENDAR_CLIENT_ID)
+        print("CLIENT SECRET:", settings.GOOGLE_CALENDAR_CLIENT_SECRET)
+        print("REDIRECT URI:", settings.GOOGLE_CALENDAR_REDIRECT_URI)
         flow = Flow.from_client_config(
             {
                 "web": {

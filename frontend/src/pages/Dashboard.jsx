@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
+import { motion } from 'framer-motion'
 import toast from 'react-hot-toast'
 import WorkoutCard from '../components/WorkoutCard'
 import MealCard from '../components/MealCard'
@@ -77,12 +78,17 @@ export default function Dashboard() {
   const goalLabel = user?.goal?.replace('_', ' ') || ''
 
   return (
-    <div className="page-enter max-w-6xl mx-auto px-6 py-10">
+    <motion.div 
+      initial={{ opacity: 0, y: 10 }} 
+      animate={{ opacity: 1, y: 0 }} 
+      transition={{ duration: 0.4 }}
+      className="page-enter max-w-7xl mx-auto px-8 py-20"
+    >
 
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-10">
         <div>
-          <h1 className="text-3xl font-bold text-white">
+          <h1 className="text-4xl md:text-5xl font-bold text-white tracking-tight">
             Namaste, <span className="text-forest-400">{user?.name}</span> 🙏
           </h1>
           <p className="text-white/40 mt-1 text-sm capitalize">
@@ -106,23 +112,30 @@ export default function Dashboard() {
       </div>
 
       {/* Stats row */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-8">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-16">
         {[
           { label: 'Age',      value: user?.age + ' yrs',          icon: '🎂' },
           { label: 'Goal',     value: goalLabel,                    icon: '🎯' },
           { label: 'Diet',     value: user?.diet_type,              icon: '🥗' },
           { label: 'Daily',    value: user?.time_availability + ' min', icon: '⏱️' },
-        ].map(({ label, value, icon }) => (
-          <div key={label} className="glass rounded-2xl border border-white/5 p-4">
+        ].map(({ label, value, icon }, index) => (
+          <motion.div 
+            key={label} 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: index * 0.1 }}
+            whileHover={{ scale: 1.02, backgroundColor: 'rgba(255,255,255,0.08)' }}
+            className="glass rounded-3xl border border-white/5 p-6 cursor-pointer"
+          >
             <div className="text-xl mb-2">{icon}</div>
             <div className="text-xs text-white/35 mb-0.5 uppercase tracking-wider">{label}</div>
             <div className="text-sm font-semibold text-white capitalize">{value}</div>
-          </div>
+          </motion.div>
         ))}
       </div>
 
       {/* Tab switcher */}
-      <div className="flex gap-2 mb-6">
+      <div className="flex gap-4 mb-10">
         {[
           { key: 'workout', label: '🏋️ Workout Plan' },
           { key: 'meal',    label: '🍱 Meal Plan'    },
@@ -168,7 +181,7 @@ export default function Dashboard() {
             : <EmptyState type="meal" onGenerate={() => handleRegen('meal')} loading={regen === 'meal'} />
         )}
       </div>
-    </div>
+    </motion.div>
   )
 }
 

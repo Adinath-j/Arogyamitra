@@ -160,6 +160,7 @@ class ChatResponse(BaseModel):
     reply: str
     modified_workout_plan: Optional[dict] = None
     modified_meal_plan: Optional[dict] = None
+    profile_updates: Optional[dict] = None
 
 # ---------- YouTube ----------
 

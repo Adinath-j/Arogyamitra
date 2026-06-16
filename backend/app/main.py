@@ -1,7 +1,9 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from app.database import engine, Base
 from app.utils.config import settings
+from app.utils.logger import logger
 
 # Import all route modules
 from app.routes import user, workout, chat, progress, auth
@@ -20,6 +22,18 @@ app = FastAPI(
     docs_url="/docs",
     redoc_url="/redoc",
 )
+
+@app.on_event("startup")
+async def startup_event():
+    logger.info(f"Starting ArogyaMitra API v2.0.0 in {settings.ENVIRONMENT} mode.")
+
+@app.exception_handler(Exception)
+async def global_exception_handler(request: Request, exc: Exception):
+    logger.error(f"Unhandled Exception: {exc}", exc_info=True)
+    return JSONResponse(
+        status_code=500,
+        content={"detail": "Internal Server Error"},
+    )
 
 # CORS
 app.add_middleware(
@@ -48,6 +62,7 @@ app.include_router(plans_router,             prefix=PREFIX)
 
 @app.get("/")
 def root():
+    logger.info("Root endpoint accessed")
     return {
         "app": "ArogyaMitra API v2.0",
         "status": "running 🌿",

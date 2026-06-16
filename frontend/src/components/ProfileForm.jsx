@@ -7,8 +7,8 @@ const GOALS = [
 ]
 
 const DIETS = [
-  { value: 'veg',     label: '🥦 Vegetarian' },
-  { value: 'non-veg', label: '🍗 Non-Vegetarian' },
+  { value: 'vegetarian',     label: '🥦 Vegetarian' },
+  { value: 'non_vegetarian', label: '🍗 Non-Vegetarian' },
   { value: 'vegan',   label: '🌱 Vegan' },
 ]
 

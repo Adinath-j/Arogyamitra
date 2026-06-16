@@ -11,6 +11,7 @@ import Register from './pages/auth/Register'
 import Dashboard from './pages/Dashboard'
 import Chat      from './pages/Chat'
 import Profile   from './pages/Profile'
+import Home      from './pages/Home'
 
 function ProtectedRoute({ children }) {
   const { isAuthenticated } = useAuthStore()
@@ -27,9 +28,6 @@ export default function App() {
 
   return (
     <BrowserRouter>
-      <Toaster position="top-right" toastOptions={{
-        style: { background: '#1a2720', color: '#e2f5ec', border: '1px solid rgba(40,156,110,0.2)' },
-      }} />
       <div className="min-h-screen flex flex-col">
         {isAuthenticated && <Navbar />}
         <main className="flex-1">
@@ -44,8 +42,8 @@ export default function App() {
             <Route path="/profile"   element={<ProtectedRoute><Profile /></ProtectedRoute>} />
 
             {/* Default redirect */}
-            <Route path="/" element={<Navigate to={isAuthenticated ? '/dashboard' : '/login'} replace />} />
-            <Route path="*" element={<Navigate to={isAuthenticated ? '/dashboard' : '/login'} replace />} />
+            <Route path="/" element={<AuthRoute><Home /></AuthRoute>} />
+            <Route path="*" element={<Navigate to={isAuthenticated ? '/dashboard' : '/'} replace />} />
           </Routes>
         </main>
       </div>

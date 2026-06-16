@@ -2,7 +2,8 @@ import json
 from sqlalchemy.orm import Session
 from app.models.models import User, ChatHistory, Plan
 from app.services.groq_service import call_groq_json
-from app.utils.prompts import chat_system_prompt
+from app.ai.prompt_builder import PromptBuilder
+from app.ai.context_resolver import ContextResolver
 from app.schemas.schemas import ArogyaCoachMessage
 
 
@@ -11,8 +12,11 @@ def chat_with_aromi(request: ArogyaCoachMessage, db: Session) -> dict:
     if not user:
         raise ValueError(f"User {request.user_id} not found")
 
-    system = chat_system_prompt(
-        user,
+    # --- Context Resolution Architecture ---
+    effective_user_context, profile_updates = ContextResolver.resolve(user, request.message)
+
+    system = PromptBuilder.build_chat_system_prompt(
+        user=effective_user_context,
         user_status=request.user_status,
         current_workout=request.current_workout_plan,
         current_meal=request.current_meal_plan
@@ -37,15 +41,44 @@ def chat_with_aromi(request: ArogyaCoachMessage, db: Session) -> dict:
     # Save user message
     user_msg = ChatHistory(user_id=user.id, role="user", content=request.message)
     db.add(user_msg)
-
-    # Call AI
-    ai_response = call_groq_json(messages=groq_messages)
-
-    # Extract reply, fallback if failed
-    reply_text = ai_response.get("reply", "I'm here for you! How can I help today?") if isinstance(ai_response, dict) else str(ai_response)
     
-    if "error" in ai_response:
-        reply_text = "I'm having trouble understanding right now, but I'm here to help you stay fit!"
+    # --- Agentic Request Routing ---
+    from app.ai.router import RequestRouter
+    route_info = RequestRouter.classify_intent(request.message)
+    intent = route_info.get("intent", "general_conversation")
+    print(f"AROMI Router classified intent: {intent} with {route_info.get('confidence', 0)} confidence.")
+    
+    ai_response = {}
+    reply_text = ""
+    
+    if intent == "workout_generation":
+        from app.services.workout_service import generate_workout_plan
+        print("AROMI Router triggering: generate_workout_plan")
+        try:
+            generate_workout_plan(user.id, db, request.message)
+            reply_text = "I've just generated a brand new workout plan tailored to your profile! 💪 You can check it out in your Dashboard."
+        except Exception as e:
+            reply_text = f"I tried to generate a workout plan for you, but something went wrong: {e}"
+            
+    elif intent == "meal_plan_generation":
+        from app.services.meal_service import generate_meal_plan
+        print("AROMI Router triggering: generate_meal_plan")
+        try:
+            generate_meal_plan(user, db, request.message)
+            reply_text = "I've crafted a personalized Indian meal plan for you! 🍱 It's ready to view in your Dashboard."
+        except Exception as e:
+            reply_text = f"I tried to create your meal plan, but hit a snag: {e}"
+            
+    else:
+        # Fallback to general conversational AI
+        ai_response = call_groq_json(messages=groq_messages)
+
+    # Extract reply, fallback if failed (only if not already set by router)
+    if not reply_text:
+        reply_text = ai_response.get("reply", "I'm here for you! How can I help today?") if isinstance(ai_response, dict) else str(ai_response)
+        
+        if "error" in ai_response:
+            reply_text = "I'm having trouble understanding right now, but I'm here to help you stay fit!"
 
     # --- Realtime Adaptive Support: Parse plan modifications ---
     if isinstance(ai_response, dict):
@@ -73,4 +106,10 @@ def chat_with_aromi(request: ArogyaCoachMessage, db: Session) -> dict:
     db.add(assistant_msg)
     db.commit()
 
-    return ai_response if isinstance(ai_response, dict) else {"reply": str(ai_response)}
+    if isinstance(ai_response, dict):
+        ai_response["reply"] = reply_text
+        if profile_updates:
+            ai_response["profile_updates"] = profile_updates
+        return ai_response
+    else:
+        return {"reply": reply_text, "profile_updates": profile_updates}

@@ -1,5 +1,8 @@
 import { useState, useRef, useEffect } from 'react'
 import { sendChatMessage } from '../api/api'
+import ReactMarkdown from 'react-markdown'
+import remarkGfm from 'remark-gfm'
+import AromiAvatar from './AromiAvatar'
 
 const SUGGESTIONS = [
   "How much water should I drink daily?",
@@ -14,25 +17,29 @@ function Message({ msg }) {
   return (
     <div className={`flex gap-3 bubble-enter ${isUser ? 'flex-row-reverse' : 'flex-row'}`}>
       {/* Avatar */}
-      <div className={`
-        w-8 h-8 rounded-xl flex items-center justify-center text-sm flex-shrink-0 mt-0.5
-        ${isUser
-          ? 'bg-forest-500/20 border border-forest-500/30'
-          : 'bg-gradient-to-br from-saffron-500/30 to-forest-500/30 border border-white/10'
-        }
-      `}>
-        {isUser ? '👤' : '🌿'}
-      </div>
+      {isUser ? (
+        <div className="w-8 h-8 rounded-xl flex items-center justify-center text-sm flex-shrink-0 mt-0.5 bg-forest-500/20 border border-forest-500/30">
+          👤
+        </div>
+      ) : (
+        <AromiAvatar size={32} className="mt-0.5" />
+      )}
 
       {/* Bubble */}
       <div className={`
         max-w-[75%] px-4 py-3 rounded-2xl text-sm leading-relaxed
         ${isUser
-          ? 'bg-forest-500/20 border border-forest-500/20 text-white/90 rounded-tr-sm'
-          : 'bg-white/5 border border-white/8 text-white/80 rounded-tl-sm'
+          ? 'bg-forest-500/20 border border-forest-500/20 text-white/90 rounded-tr-sm whitespace-pre-wrap'
+          : 'bg-white/5 border border-white/8 text-white/80 rounded-tl-sm markdown-body'
         }
       `}>
-        {msg.content}
+        {isUser ? (
+          msg.content
+        ) : (
+          <ReactMarkdown remarkPlugins={[remarkGfm]}>
+            {msg.content}
+          </ReactMarkdown>
+        )}
       </div>
     </div>
   )
@@ -41,9 +48,7 @@ function Message({ msg }) {
 function TypingIndicator() {
   return (
     <div className="flex gap-3 bubble-enter">
-      <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-saffron-500/30 to-forest-500/30 border border-white/10 flex items-center justify-center text-sm flex-shrink-0">
-        🌿
-      </div>
+      <AromiAvatar size={32} />
       <div className="px-4 py-3 rounded-2xl rounded-tl-sm bg-white/5 border border-white/8 flex items-center gap-1.5">
         {[0, 1, 2].map((i) => (
           <span
@@ -83,7 +88,7 @@ export default function ChatUI({ userId }) {
     setLoading(true)
 
     try {
-      const { reply } = await sendChatMessage(userId, newMessages)
+      const { reply } = await sendChatMessage(userId, text.trim())
       setMessages([...newMessages, { role: 'assistant', content: reply }])
     } catch (err) {
       setMessages([...newMessages, {

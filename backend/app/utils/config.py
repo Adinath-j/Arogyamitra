@@ -4,7 +4,7 @@ from typing import List
 
 class Settings(BaseSettings):
     # Database
-    DATABASE_URL: str = "sqlite:///./arogyamitra.db"
+    DATABASE_URL: str = "postgresql://postgres.krrejqmtyfwsquvtubee:ArogyaMitra%40123@aws-1-ap-southeast-1.pooler.supabase.com:6543/postgres"
     SECRET_KEY: str = "arogyamitra-super-secret-key-2024"
 
     # App
