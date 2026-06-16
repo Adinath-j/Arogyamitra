@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { createUser, generateWorkout, generateMeal } from '../api/api'
+import { useAuthStore } from '../stores/authStore'
 
 // Landing components
 import HeroSection from '../components/landing/HeroSection'
@@ -11,39 +11,15 @@ import StatsSection from '../components/landing/StatsSection'
 import OnboardingModal from '../components/landing/OnboardingModal'
 
 export default function Home() {
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState('')
-  const [step, setStep] = useState('')
   const [isModalOpen, setIsModalOpen] = useState(false)
   const navigate = useNavigate()
+  const { setOnboardingData } = useAuthStore()
 
-  const handleSubmit = async (formData) => {
-    setLoading(true)
-    setError('')
-    try {
-      // 1. Create user
-      setStep('Creating your profile…')
-      const user = await createUser(formData)
-      localStorage.setItem('arogyamitra_user_id', user.id)
-      localStorage.setItem('arogyamitra_user_name', user.name)
-
-      // 2. Generate plans sequentially to show progress
-      setStep('Generating your 7-day workout plan with AI…')
-      await generateWorkout(user.id)
-
-      setStep('Crafting your personalized Indian meal plan…')
-      await generateMeal(user.id)
-
-      // 3. Navigate to dashboard
-      setIsModalOpen(false)
-      navigate('/dashboard')
-    } catch (err) {
-      const msg = err.response?.data?.detail || err.message || 'Something went wrong.'
-      setError(msg)
-    } finally {
-      setLoading(false)
-      setStep('')
-    }
+  const handleSubmit = (formData) => {
+    // Save onboarding payload to Zustand
+    setOnboardingData(formData)
+    setIsModalOpen(false)
+    navigate('/register')
   }
 
   return (
@@ -62,22 +38,30 @@ export default function Home() {
       <section className="py-32 relative z-10 text-center px-6">
         <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">Ready to transform your wellness journey?</h2>
         <p className="text-lg text-white/60 mb-10 max-w-2xl mx-auto">Join ArogyaMitra today and get a hyper-personalized health plan generated instantly.</p>
-        <button 
-          onClick={() => setIsModalOpen(true)}
-          className="px-10 py-5 rounded-full bg-gradient-to-r from-forest-500 to-forest-400 text-white text-lg font-bold hover:scale-105 hover:shadow-[0_0_30px_rgba(34,197,94,0.4)] transition-all"
-        >
-          Create My Personalized Plan
-        </button>
+        <div className="flex flex-col sm:flex-row justify-center items-center gap-4">
+          <button 
+            onClick={() => setIsModalOpen(true)}
+            className="px-10 py-5 rounded-full bg-gradient-to-r from-forest-500 to-forest-400 text-white text-lg font-bold hover:scale-105 hover:shadow-[0_0_30px_rgba(34,197,94,0.4)] transition-all"
+          >
+            Create My Personalized Plan
+          </button>
+          <button 
+            onClick={() => navigate('/login')}
+            className="px-10 py-5 rounded-full glass border border-white/10 text-white text-lg font-bold hover:bg-white/5 transition-all"
+          >
+            Log In
+          </button>
+        </div>
       </section>
 
       {/* Modal */}
       <OnboardingModal 
         isOpen={isModalOpen}
-        onClose={() => !loading && setIsModalOpen(false)}
+        onClose={() => setIsModalOpen(false)}
         onSubmit={handleSubmit}
-        loading={loading}
-        error={error}
-        step={step}
+        loading={false}
+        error={''}
+        step={''}
       />
     </div>
   )

@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion'
 import { ArrowRight, Sparkles } from 'lucide-react'
+import { Link } from 'react-router-dom'
 
 const MockupCard = ({ children, delay, yOffset = [0, -10, 0], className }) => (
   <motion.div
@@ -45,11 +46,11 @@ export default function HeroSection({ onGetStarted }) {
               onClick={onGetStarted}
               className="px-8 py-4 rounded-full bg-gradient-to-r from-forest-500 to-forest-400 text-white font-semibold hover:shadow-[0_0_20px_rgba(34,197,94,0.4)] transition-all flex items-center gap-2"
             >
-              Get Started <ArrowRight className="w-5 h-5" />
+              Create Your Personalized Plan <ArrowRight className="w-5 h-5" />
             </button>
-            <button className="px-8 py-4 rounded-full glass border border-white/10 text-white font-semibold hover:bg-white/5 transition-all">
-              Explore Features
-            </button>
+            <Link to="/login" className="px-8 py-4 rounded-full glass border border-white/10 text-white font-semibold hover:bg-white/5 transition-all">
+              Log In
+            </Link>
           </div>
         </motion.div>
 
