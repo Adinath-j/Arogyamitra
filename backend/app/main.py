@@ -11,7 +11,8 @@ from app.routes import health_assessment, youtube, spoonacular, calendar
 from app.routes.meal import router as meal_router
 from app.routes.plans import router as plans_router
 
-
+print("CORS_ORIGINS:", settings.CORS_ORIGINS)
+print("TYPE:", type(settings.CORS_ORIGINS))
 # Auto-create all DB tables
 Base.metadata.create_all(bind=engine)
 
