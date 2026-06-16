@@ -11,8 +11,7 @@ from app.routes import health_assessment, youtube, spoonacular, calendar
 from app.routes.meal import router as meal_router
 from app.routes.plans import router as plans_router
 
-print("CORS_ORIGINS:", settings.CORS_ORIGINS)
-print("TYPE:", type(settings.CORS_ORIGINS))
+
 # Auto-create all DB tables
 Base.metadata.create_all(bind=engine)
 
@@ -39,12 +38,15 @@ async def global_exception_handler(request: Request, exc: Exception):
 # CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=settings.CORS_ORIGINS,
+    allow_origins=[
+        "http://localhost:5173",
+        "http://localhost:3000",
+        "https://arogyamitra-chi.vercel.app",
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
 # Mount all routers under /api prefix
 PREFIX = "/api"
 app.include_router(auth.router,              prefix=PREFIX)
