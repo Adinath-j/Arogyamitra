@@ -1,9 +1,27 @@
 import { motion, AnimatePresence } from 'framer-motion'
 import { X } from 'lucide-react'
 import ProfileForm from '../ProfileForm'
+import { createPortal } from 'react-dom'
+import { useEffect, useState } from 'react'
 
 export default function OnboardingModal({ isOpen, onClose, onSubmit, loading, error, step }) {
-  return (
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+    if (isOpen) {
+      document.body.style.overflow = 'hidden'
+    } else {
+      document.body.style.overflow = 'unset'
+    }
+    return () => {
+      document.body.style.overflow = 'unset'
+    }
+  }, [isOpen])
+
+  if (!mounted) return null
+
+  return createPortal(
     <AnimatePresence>
       {isOpen && (
         <>
@@ -13,17 +31,17 @@ export default function OnboardingModal({ isOpen, onClose, onSubmit, loading, er
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className="fixed inset-0 z-50 bg-black/60 backdrop-blur-md"
+            className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-md"
           />
 
           {/* Modal Container */}
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 pointer-events-none">
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6 pointer-events-none">
             <motion.div
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
               transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-              className="w-full max-w-2xl max-h-[90vh] overflow-y-auto pointer-events-auto rounded-[2rem] glass border border-white/10 glow-green relative hide-scrollbar"
+              className="w-full max-w-2xl max-h-[100vh] overflow-y-auto pointer-events-auto rounded-[2rem] glass border border-white/10 glow-green relative hide-scrollbar bg-black/40"
             >
               {/* Close Button */}
               <button
@@ -68,6 +86,7 @@ export default function OnboardingModal({ isOpen, onClose, onSubmit, loading, er
           </div>
         </>
       )}
-    </AnimatePresence>
+    </AnimatePresence>,
+    document.body
   )
 }
