@@ -26,6 +26,7 @@ app = FastAPI(
 @app.on_event("startup")
 async def startup_event():
     logger.info(f"Starting ArogyaMitra API v2.0.0 in {settings.ENVIRONMENT} mode.")
+    logger.info("Loaded CORS origins:\n- " + "\n- ".join(settings.CORS_ORIGINS))
 
 @app.exception_handler(Exception)
 async def global_exception_handler(request: Request, exc: Exception):

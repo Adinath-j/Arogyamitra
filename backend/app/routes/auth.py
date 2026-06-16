@@ -5,6 +5,7 @@ from app.database import get_db
 from app.models.models import User
 from app.schemas.schemas import RegisterRequest, TokenResponse, UserResponse
 from app.utils.auth import hash_password, verify_password, create_access_token, get_current_user
+from app.utils.logger import logger
 
 router = APIRouter(prefix="/auth", tags=["Auth"])
 
@@ -12,6 +13,16 @@ router = APIRouter(prefix="/auth", tags=["Auth"])
 @router.post("/register", response_model=TokenResponse, status_code=201)
 def register(payload: RegisterRequest, db: Session = Depends(get_db)):
     """Register a new user and return a JWT token."""
+    if not payload.email or not payload.email.strip():
+        logger.warning("User creation rejected: missing required field 'email'")
+        raise HTTPException(status_code=400, detail="Email is required")
+    if not payload.username or not payload.username.strip():
+        logger.warning("User creation rejected: missing required field 'username'")
+        raise HTTPException(status_code=400, detail="Username is required")
+    if not payload.password or not payload.password.strip():
+        logger.warning("User creation rejected: missing required field 'password'")
+        raise HTTPException(status_code=400, detail="Password is required")
+
     if db.query(User).filter(User.email == payload.email).first():
         raise HTTPException(status_code=400, detail="Email already registered")
     if db.query(User).filter(User.username == payload.username).first():
