@@ -1,0 +1,131 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id                      Int                @id @default(autoincrement())
+  email                   String             @unique
+  username                String             @unique
+  hashed_password         String
+  role                    String             @default("user")
+  full_name               String?
+  name                    String?
+  age                     Int?
+  gender                  String?
+  goal                    String?
+  diet_type               String?
+  allergies               String?            @default("")
+  time_availability       Int?               @default(45)
+  height                  Float?
+  weight                  Float?
+  fitness_level           String?
+  fitness_goal            String?
+  workout_preference      String?
+  diet_preference         String?
+  current_streak          Int?               @default(0)
+  longest_streak          Int?               @default(0)
+  charity_points          Int?               @default(0)
+  total_workouts_completed Int?              @default(0)
+  total_calories_burned   Float?             @default(0.0)
+  created_at              DateTime           @default(now())
+  google_access_token     String?
+  google_refresh_token    String?
+
+  plans                   Plan[]
+  chat_messages           ChatHistory[]
+  progress_logs           ProgressLog[]
+  health_assessments      HealthAssessment[]
+  meal_logs               MealLog[]
+  workout_plans           WorkoutPlan[]
+
+  @@map("users")
+}
+
+model Plan {
+  id         Int      @id @default(autoincrement())
+  user_id    Int
+  plan_type  String
+  content    String
+  created_at DateTime @default(now())
+
+  user       User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@map("plans")
+}
+
+model ChatHistory {
+  id         Int      @id @default(autoincrement())
+  user_id    Int
+  role       String
+  content    String
+  created_at DateTime @default(now())
+
+  user       User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@map("chat_history")
+}
+
+model ProgressLog {
+  id               Int      @id @default(autoincrement())
+  user_id          Int
+  log_date         DateTime @default(now())
+  weight           Float?
+  calories_burned  Float    @default(0.0)
+  workout_duration Int      @default(0)
+  steps            Int      @default(0)
+  water_intake     Float    @default(0.0)
+  sleep_hours      Float    @default(0.0)
+  mood             String   @default("Good")
+
+  user             User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@map("progress_logs")
+}
+
+model HealthAssessment {
+  id                Int      @id @default(autoincrement())
+  user_id           Int
+  bmi               Float?
+  injuries          String?
+  medications       String?
+  health_conditions String?
+  assessment_data   String?
+  recommendations   String?
+  bmi_category      String?
+  health_score      Float?
+  ai_analysis       String?
+  created_at        DateTime @default(now())
+
+  user              User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@map("health_assessments")
+}
+
+model MealLog {
+  id          Int      @id @default(autoincrement())
+  user_id     Int
+  meal_type   String
+  description String?
+  calories    Float?
+  logged_at   DateTime @default(now())
+
+  user        User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@map("meal_logs")
+}
+
+model WorkoutPlan {
+  id         Int      @id @default(autoincrement())
+  user_id    Int
+  plan_data  String
+  created_at DateTime @default(now())
+
+  user       User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@map("workout_plans")
+}

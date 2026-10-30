@@ -19,14 +19,16 @@ It features an intelligent assistant (AROMI) powered by LLama3 that natively ana
 - **API Communication:** Axios with centralized interceptors
 - **Icons & UI:** Lucide React, React Hot Toast
 
-### Backend (Python + FastAPI)
-- **Framework:** FastAPI (Uvicorn ASGI server)
-- **Database:** PostgreSQL (Hosted on Supabase) via SQLAlchemy ORM
-- **Authentication:** JWT (JSON Web Tokens), Native Bcrypt hashing
-- **AI Integration:** Groq API (LLama3-8b-8192) for JSON-structured generative responses
+### Backend (Node.js + Express + Prisma)
+- **Framework:** Express.js (Node.js >= 18)
+- **ORM & Data Layer:** Prisma ORM
+- **Database:** PostgreSQL (Hosted on Supabase)
+- **Authentication:** JWT (`jsonwebtoken`), Native Bcrypt hashing (`bcrypt`)
+- **Validation:** Zod Schema Validation
+- **AI Integration:** Groq SDK (LLaMA 3.3-70B) for JSON-structured generative responses
 - **Third-Party Integrations:**
-  - Google Calendar API v3 (OAuth2 scheduling for workouts)
-  - YouTube Data API v3 (Dynamic exercise video scraping)
+  - Google Calendar API v3 (`googleapis` OAuth2 scheduling for workouts)
+  - YouTube Data API v3 (Dynamic exercise video search & form tutorials)
   - Spoonacular API (Macronutrient & recipe analysis)
 
 ---
@@ -88,13 +90,19 @@ source .venv/bin/activate
 
 Install the dependencies:
 ```bash
-pip install -r requirements.txt
+npm install
+```
+
+Generate the Prisma Client:
+```bash
+npm run prisma:generate
 ```
 
 Create a `.env` file in the `backend` folder containing your keys:
 ```env
+PORT=8000
 ENVIRONMENT=development
-DATABASE_URL=postgresql://[user]:[password]@[host]:6543/postgres
+DATABASE_URL=postgresql://[user]:[password]@[host]:6543/postgres?pgbouncer=true
 
 SECRET_KEY=generate_a_strong_string
 JWT_SECRET_KEY=generate_another_strong_string
@@ -110,9 +118,9 @@ GOOGLE_CALENDAR_REDIRECT_URI=http://localhost:8000/api/calendar/callback
 
 Boot the server:
 ```bash
-uvicorn app.main:app --reload
+npm run dev
 ```
-*Your backend is now live at http://127.0.0.1:8000*
+*Your backend is now live at http://localhost:8000*
 
 
 ### 2. Run the Frontend (React + Vite)
